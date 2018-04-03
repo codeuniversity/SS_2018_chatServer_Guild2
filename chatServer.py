@@ -5,6 +5,7 @@ import json
 
 host = '127.0.0.1'
 port = 5000
+MAX_MSG_SIZE = 32767
 
 clientConnections = []
 
@@ -21,13 +22,16 @@ def connection(conn):
         print('Connected by', addr)
         size = conn.recv(2)
         size = int.from_bytes(size, "big")
-        if (size > 32767):
+        if (size > MAX_MSG_SIZE):
             raise CCCPException
         data = conn.recv(size)
         package = json.loads(data.decode())
         if (package["msg-type"] != "create-user"):
             raise CCCPException
+        user_name = package["msg"]["name"]
+        print(user_name)
         while True:
+            pass
             #if not data: break
             #conn.sendall(data)
 
@@ -37,6 +41,7 @@ def broadcastToClients(msg):
     for client in clientConnections:
         client.connection.sendall(msg)
 
+# entry point
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((host, port))
     s.listen(1)
